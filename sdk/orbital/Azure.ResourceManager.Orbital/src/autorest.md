@@ -16,6 +16,9 @@ skip-csproj: true
 modelerfour:
   flatten-payloads: false
 
+csharpgen:
+  attach: true
+
 rename-mapping:
   EndPoint.ipAddress: -|ip-address
   ContactProfilesPropertiesNetworkConfiguration.subnetId: NetworkSubnetId|arm-id
@@ -82,6 +85,5 @@ directive:
     transform: >
       $.AvailableGroundStationProperties['x-ms-client-name'] = 'GroundStationProperties';
       $.ContactProfilesProperties.properties.minimumViableContactDuration['format'] = 'duration';
-  - remove-operation: Spacecrafts_ListAvailableContacts
   - remove-operation: OperationsResults_Get
 ```
