@@ -10,12 +10,22 @@ using Azure.Core;
 
 namespace Azure.Quantum.Jobs.Models
 {
-    public partial class ErrorData
+    public partial class ErrorData : IUtf8JsonSerializable
     {
+        void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
+        {
+            writer.WriteStartObject();
+            writer.WritePropertyName("code");
+            writer.WriteStringValue(Code);
+            writer.WritePropertyName("message");
+            writer.WriteStringValue(Message);
+            writer.WriteEndObject();
+        }
+
         internal static ErrorData DeserializeErrorData(JsonElement element)
         {
-            Optional<string> code = default;
-            Optional<string> message = default;
+            string code = default;
+            string message = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("code"))
@@ -29,7 +39,7 @@ namespace Azure.Quantum.Jobs.Models
                     continue;
                 }
             }
-            return new ErrorData(code.Value, message.Value);
+            return new ErrorData(code, message);
         }
     }
 }

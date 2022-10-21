@@ -5,28 +5,35 @@
 
 #nullable disable
 
+using System;
+
 namespace Azure.Quantum.Jobs.Models
 {
     /// <summary> An error response from Azure. </summary>
     public partial class ErrorData
     {
         /// <summary> Initializes a new instance of ErrorData. </summary>
-        internal ErrorData()
-        {
-        }
-
-        /// <summary> Initializes a new instance of ErrorData. </summary>
         /// <param name="code"> An identifier for the error. Codes are invariant and are intended to be consumed programmatically. </param>
         /// <param name="message"> A message describing the error, intended to be suitable for displaying in a user interface. </param>
-        internal ErrorData(string code, string message)
+        /// <exception cref="ArgumentNullException"> <paramref name="code"/> or <paramref name="message"/> is null. </exception>
+        public ErrorData(string code, string message)
         {
+            if (code == null)
+            {
+                throw new ArgumentNullException(nameof(code));
+            }
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             Code = code;
             Message = message;
         }
 
         /// <summary> An identifier for the error. Codes are invariant and are intended to be consumed programmatically. </summary>
-        public string Code { get; }
+        public string Code { get; set; }
         /// <summary> A message describing the error, intended to be suitable for displaying in a user interface. </summary>
-        public string Message { get; }
+        public string Message { get; set; }
     }
 }

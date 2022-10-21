@@ -16,60 +16,65 @@ using Azure.Quantum.Jobs.Models;
 
 namespace Azure.Quantum.Jobs
 {
-    internal partial class ProvidersRestClient
+    internal partial class ProvidersRestOperations
     {
+        private readonly TelemetryDetails _userAgent;
         private readonly HttpPipeline _pipeline;
-        private readonly string _subscriptionId;
         private readonly string _resourceGroupName;
         private readonly string _workspaceName;
         private readonly Uri _endpoint;
+        private readonly string _apiVersion;
 
-        /// <summary> The ClientDiagnostics is used to provide tracing support for the client library. </summary>
-        internal ClientDiagnostics ClientDiagnostics { get; }
-
-        /// <summary> Initializes a new instance of ProvidersRestClient. </summary>
-        /// <param name="clientDiagnostics"> The handler for diagnostic messaging in the client. </param>
+        /// <summary> Initializes a new instance of ProvidersRestOperations. </summary>
         /// <param name="pipeline"> The HTTP pipeline for sending and receiving REST requests and responses. </param>
-        /// <param name="subscriptionId"> The Azure subscription ID. This is a GUID-formatted string (e.g. 00000000-0000-0000-0000-000000000000). </param>
+        /// <param name="applicationId"> The application id to use for user agent. </param>
         /// <param name="resourceGroupName"> Name of an Azure resource group. </param>
         /// <param name="workspaceName"> Name of the workspace. </param>
         /// <param name="endpoint"> server parameter. </param>
-        /// <exception cref="ArgumentNullException"> <paramref name="clientDiagnostics"/>, <paramref name="pipeline"/>, <paramref name="subscriptionId"/>, <paramref name="resourceGroupName"/> or <paramref name="workspaceName"/> is null. </exception>
-        /// <exception cref="ArgumentException"> <paramref name="subscriptionId"/>, <paramref name="resourceGroupName"/> or <paramref name="workspaceName"/> is an empty string, and was expected to be non-empty. </exception>
-        public ProvidersRestClient(ClientDiagnostics clientDiagnostics, HttpPipeline pipeline, string subscriptionId, string resourceGroupName, string workspaceName, Uri endpoint = null)
+        /// <param name="apiVersion"> Api Version. </param>
+        /// <exception cref="ArgumentNullException"> <paramref name="pipeline"/>, <paramref name="resourceGroupName"/>, <paramref name="workspaceName"/> or <paramref name="apiVersion"/> is null. </exception>
+        /// <exception cref="ArgumentException"> <paramref name="resourceGroupName"/> or <paramref name="workspaceName"/> is an empty string, and was expected to be non-empty. </exception>
+        public ProvidersRestOperations(HttpPipeline pipeline, string applicationId, string resourceGroupName, string workspaceName, Uri endpoint = null, string apiVersion = default)
         {
-            ClientDiagnostics = clientDiagnostics ?? throw new ArgumentNullException(nameof(clientDiagnostics));
             _pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
-            _subscriptionId = subscriptionId ?? throw new ArgumentNullException(nameof(subscriptionId));
             _resourceGroupName = resourceGroupName ?? throw new ArgumentNullException(nameof(resourceGroupName));
             _workspaceName = workspaceName ?? throw new ArgumentNullException(nameof(workspaceName));
             _endpoint = endpoint ?? new Uri("https://quantum.azure.com");
+            _apiVersion = apiVersion ?? "2022-09-12-preview";
+            _userAgent = new TelemetryDetails(GetType().Assembly, applicationId);
         }
 
-        internal HttpMessage CreateGetStatusRequest()
+        internal HttpMessage CreateGetStatusRequest(string subscriptionId)
         {
             var message = _pipeline.CreateMessage();
             var request = message.Request;
             request.Method = RequestMethod.Get;
             var uri = new RawRequestUriBuilder();
             uri.Reset(_endpoint);
-            uri.AppendPath("/v1.0/subscriptions/", false);
-            uri.AppendPath(_subscriptionId, true);
+            uri.AppendPath("/subscriptions/", false);
+            uri.AppendPath(subscriptionId, true);
             uri.AppendPath("/resourceGroups/", false);
             uri.AppendPath(_resourceGroupName, true);
             uri.AppendPath("/providers/Microsoft.Quantum/workspaces/", false);
             uri.AppendPath(_workspaceName, true);
             uri.AppendPath("/providerStatus", false);
+            uri.AppendQuery("api-version", _apiVersion, true);
             request.Uri = uri;
             request.Headers.Add("Accept", "application/json");
+            _userAgent.Apply(message);
             return message;
         }
 
         /// <summary> Get provider status. </summary>
+        /// <param name="subscriptionId"> The Azure subscription ID. This is a GUID-formatted string (e.g. 00000000-0000-0000-0000-000000000000). </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
-        public async Task<Response<ProviderStatusList>> GetStatusAsync(CancellationToken cancellationToken = default)
+        /// <exception cref="ArgumentNullException"> <paramref name="subscriptionId"/> is null. </exception>
+        /// <exception cref="ArgumentException"> <paramref name="subscriptionId"/> is an empty string, and was expected to be non-empty. </exception>
+        public async Task<Response<ProviderStatusList>> GetStatusAsync(string subscriptionId, CancellationToken cancellationToken = default)
         {
-            using var message = CreateGetStatusRequest();
+            Argument.AssertNotNullOrEmpty(subscriptionId, nameof(subscriptionId));
+
+            using var message = CreateGetStatusRequest(subscriptionId);
             await _pipeline.SendAsync(message, cancellationToken).ConfigureAwait(false);
             switch (message.Response.Status)
             {
@@ -81,15 +86,20 @@ namespace Azure.Quantum.Jobs
                         return Response.FromValue(value, message.Response);
                     }
                 default:
-                    throw await ClientDiagnostics.CreateRequestFailedExceptionAsync(message.Response).ConfigureAwait(false);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
         /// <summary> Get provider status. </summary>
+        /// <param name="subscriptionId"> The Azure subscription ID. This is a GUID-formatted string (e.g. 00000000-0000-0000-0000-000000000000). </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
-        public Response<ProviderStatusList> GetStatus(CancellationToken cancellationToken = default)
+        /// <exception cref="ArgumentNullException"> <paramref name="subscriptionId"/> is null. </exception>
+        /// <exception cref="ArgumentException"> <paramref name="subscriptionId"/> is an empty string, and was expected to be non-empty. </exception>
+        public Response<ProviderStatusList> GetStatus(string subscriptionId, CancellationToken cancellationToken = default)
         {
-            using var message = CreateGetStatusRequest();
+            Argument.AssertNotNullOrEmpty(subscriptionId, nameof(subscriptionId));
+
+            using var message = CreateGetStatusRequest(subscriptionId);
             _pipeline.Send(message, cancellationToken);
             switch (message.Response.Status)
             {
@@ -101,11 +111,11 @@ namespace Azure.Quantum.Jobs
                         return Response.FromValue(value, message.Response);
                     }
                 default:
-                    throw ClientDiagnostics.CreateRequestFailedException(message.Response);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
-        internal HttpMessage CreateGetStatusNextPageRequest(string nextLink)
+        internal HttpMessage CreateGetStatusNextPageRequest(string nextLink, string subscriptionId)
         {
             var message = _pipeline.CreateMessage();
             var request = message.Request;
@@ -115,21 +125,22 @@ namespace Azure.Quantum.Jobs
             uri.AppendRawNextLink(nextLink, false);
             request.Uri = uri;
             request.Headers.Add("Accept", "application/json");
+            _userAgent.Apply(message);
             return message;
         }
 
         /// <summary> Get provider status. </summary>
         /// <param name="nextLink"> The URL to the next page of results. </param>
+        /// <param name="subscriptionId"> The Azure subscription ID. This is a GUID-formatted string (e.g. 00000000-0000-0000-0000-000000000000). </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
-        /// <exception cref="ArgumentNullException"> <paramref name="nextLink"/> is null. </exception>
-        public async Task<Response<ProviderStatusList>> GetStatusNextPageAsync(string nextLink, CancellationToken cancellationToken = default)
+        /// <exception cref="ArgumentNullException"> <paramref name="nextLink"/> or <paramref name="subscriptionId"/> is null. </exception>
+        /// <exception cref="ArgumentException"> <paramref name="subscriptionId"/> is an empty string, and was expected to be non-empty. </exception>
+        public async Task<Response<ProviderStatusList>> GetStatusNextPageAsync(string nextLink, string subscriptionId, CancellationToken cancellationToken = default)
         {
-            if (nextLink == null)
-            {
-                throw new ArgumentNullException(nameof(nextLink));
-            }
+            Argument.AssertNotNull(nextLink, nameof(nextLink));
+            Argument.AssertNotNullOrEmpty(subscriptionId, nameof(subscriptionId));
 
-            using var message = CreateGetStatusNextPageRequest(nextLink);
+            using var message = CreateGetStatusNextPageRequest(nextLink, subscriptionId);
             await _pipeline.SendAsync(message, cancellationToken).ConfigureAwait(false);
             switch (message.Response.Status)
             {
@@ -141,22 +152,22 @@ namespace Azure.Quantum.Jobs
                         return Response.FromValue(value, message.Response);
                     }
                 default:
-                    throw await ClientDiagnostics.CreateRequestFailedExceptionAsync(message.Response).ConfigureAwait(false);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
         /// <summary> Get provider status. </summary>
         /// <param name="nextLink"> The URL to the next page of results. </param>
+        /// <param name="subscriptionId"> The Azure subscription ID. This is a GUID-formatted string (e.g. 00000000-0000-0000-0000-000000000000). </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
-        /// <exception cref="ArgumentNullException"> <paramref name="nextLink"/> is null. </exception>
-        public Response<ProviderStatusList> GetStatusNextPage(string nextLink, CancellationToken cancellationToken = default)
+        /// <exception cref="ArgumentNullException"> <paramref name="nextLink"/> or <paramref name="subscriptionId"/> is null. </exception>
+        /// <exception cref="ArgumentException"> <paramref name="subscriptionId"/> is an empty string, and was expected to be non-empty. </exception>
+        public Response<ProviderStatusList> GetStatusNextPage(string nextLink, string subscriptionId, CancellationToken cancellationToken = default)
         {
-            if (nextLink == null)
-            {
-                throw new ArgumentNullException(nameof(nextLink));
-            }
+            Argument.AssertNotNull(nextLink, nameof(nextLink));
+            Argument.AssertNotNullOrEmpty(subscriptionId, nameof(subscriptionId));
 
-            using var message = CreateGetStatusNextPageRequest(nextLink);
+            using var message = CreateGetStatusNextPageRequest(nextLink, subscriptionId);
             _pipeline.Send(message, cancellationToken);
             switch (message.Response.Status)
             {
@@ -168,7 +179,7 @@ namespace Azure.Quantum.Jobs
                         return Response.FromValue(value, message.Response);
                     }
                 default:
-                    throw ClientDiagnostics.CreateRequestFailedException(message.Response);
+                    throw new RequestFailedException(message.Response);
             }
         }
     }

@@ -10,26 +10,26 @@ using Azure.Core;
 
 namespace Azure.Quantum.Jobs.Models
 {
-    /// <summary> List of job details. </summary>
-    internal partial class JobDetailsList
+    /// <summary> List of session details. </summary>
+    internal partial class SessionDetailsList
     {
-        /// <summary> Initializes a new instance of JobDetailsList. </summary>
-        internal JobDetailsList()
+        /// <summary> Initializes a new instance of SessionDetailsList. </summary>
+        internal SessionDetailsList()
         {
-            Value = new ChangeTrackingList<JobDetails>();
+            Value = new ChangeTrackingList<SessionDetails>();
         }
 
-        /// <summary> Initializes a new instance of JobDetailsList. </summary>
+        /// <summary> Initializes a new instance of SessionDetailsList. </summary>
         /// <param name="value"></param>
         /// <param name="nextLink"> Link to the next page of results. </param>
-        internal JobDetailsList(IReadOnlyList<JobDetails> value, string nextLink)
+        internal SessionDetailsList(IReadOnlyList<SessionDetails> value, string nextLink)
         {
             Value = value;
             NextLink = nextLink;
         }
 
         /// <summary> Gets the value. </summary>
-        public IReadOnlyList<JobDetails> Value { get; }
+        public IReadOnlyList<SessionDetails> Value { get; }
         /// <summary> Link to the next page of results. </summary>
         public string NextLink { get; }
     }

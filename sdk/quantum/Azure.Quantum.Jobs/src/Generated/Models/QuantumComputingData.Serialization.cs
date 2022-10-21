@@ -10,25 +10,25 @@ using Azure.Core;
 
 namespace Azure.Quantum.Jobs.Models
 {
-    internal partial class RestError
+    internal partial class QuantumComputingData
     {
-        internal static RestError DeserializeRestError(JsonElement element)
+        internal static QuantumComputingData DeserializeQuantumComputingData(JsonElement element)
         {
-            Optional<ErrorData> error = default;
+            Optional<long> count = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("error"))
+                if (property.NameEquals("count"))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    error = ErrorData.DeserializeErrorData(property.Value);
+                    count = property.Value.GetInt64();
                     continue;
                 }
             }
-            return new RestError(error.Value);
+            return new QuantumComputingData(Optional.ToNullable(count));
         }
     }
 }

@@ -12,23 +12,25 @@ using Azure.Core;
 namespace Azure.Quantum.Jobs.Models
 {
     /// <summary> Job details. </summary>
-    public partial class JobDetails
+    public partial class JobDetails : ItemDetails
     {
         /// <summary> Initializes a new instance of JobDetails. </summary>
-        /// <param name="containerUri"> The blob container SAS uri, the container is used to host job data. </param>
-        /// <param name="inputDataFormat"> The format of the input data. </param>
+        /// <param name="id"> The id of the item. </param>
+        /// <param name="name"> The name of the item. It is not required for the name to be unique and it&apos;s only used for display purposes. </param>
         /// <param name="providerId"> The unique identifier for the provider. </param>
         /// <param name="target"> The target identifier to run the job. </param>
-        /// <exception cref="ArgumentNullException"> <paramref name="containerUri"/>, <paramref name="inputDataFormat"/>, <paramref name="providerId"/> or <paramref name="target"/> is null. </exception>
-        public JobDetails(string containerUri, string inputDataFormat, string providerId, string target)
+        /// <param name="containerUri"> The blob container SAS uri, the container is used to host job data. </param>
+        /// <param name="inputDataFormat"> The format of the input data. </param>
+        /// <exception cref="ArgumentNullException"> <paramref name="id"/>, <paramref name="name"/>, <paramref name="providerId"/>, <paramref name="target"/>, <paramref name="containerUri"/> or <paramref name="inputDataFormat"/> is null. </exception>
+        public JobDetails(string id, string name, string providerId, string target, string containerUri, string inputDataFormat) : base(id, name, providerId, target)
         {
-            if (containerUri == null)
+            if (id == null)
             {
-                throw new ArgumentNullException(nameof(containerUri));
+                throw new ArgumentNullException(nameof(id));
             }
-            if (inputDataFormat == null)
+            if (name == null)
             {
-                throw new ArgumentNullException(nameof(inputDataFormat));
+                throw new ArgumentNullException(nameof(name));
             }
             if (providerId == null)
             {
@@ -38,95 +40,124 @@ namespace Azure.Quantum.Jobs.Models
             {
                 throw new ArgumentNullException(nameof(target));
             }
+            if (containerUri == null)
+            {
+                throw new ArgumentNullException(nameof(containerUri));
+            }
+            if (inputDataFormat == null)
+            {
+                throw new ArgumentNullException(nameof(inputDataFormat));
+            }
 
             ContainerUri = containerUri;
             InputDataFormat = inputDataFormat;
-            ProviderId = providerId;
-            Target = target;
             Metadata = new ChangeTrackingDictionary<string, string>();
             Tags = new ChangeTrackingList<string>();
+            ItemType = ItemType.Job;
         }
 
         /// <summary> Initializes a new instance of JobDetails. </summary>
-        /// <param name="id"> The job id. </param>
-        /// <param name="name"> The job name. Is not required for the name to be unique and it&apos;s only used for display purposes. </param>
+        /// <param name="id"> The id of the item. </param>
+        /// <param name="name"> The name of the item. It is not required for the name to be unique and it&apos;s only used for display purposes. </param>
+        /// <param name="providerId"> The unique identifier for the provider. </param>
+        /// <param name="target"> The target identifier to run the job. </param>
+        /// <param name="itemType"> The type of item. </param>
+        /// <param name="createdOn"> The creation time of the item. </param>
+        /// <param name="beginExecutionOn"> The time when the item began execution. </param>
+        /// <param name="endExecutionOn"> The time when the item finished execution. </param>
+        /// <param name="costEstimate"> The job cost billed by the provider. The final cost on your bill might be slightly different due to added taxes and currency conversion rates. </param>
+        /// <param name="errorData"> An error response from Azure. </param>
+        /// <param name="jobType"> The type of job. </param>
+        /// <param name="sessionId"> The ID of the session that the job is part of. </param>
         /// <param name="containerUri"> The blob container SAS uri, the container is used to host job data. </param>
         /// <param name="inputDataUri"> The input blob SAS uri, if specified, it will override the default input blob in the container. </param>
         /// <param name="inputDataFormat"> The format of the input data. </param>
         /// <param name="inputParams"> The input parameters for the job. JSON object used by the target solver. It is expected that the size of this object is small and only used to specify parameters for the execution target, not the input data. </param>
-        /// <param name="providerId"> The unique identifier for the provider. </param>
-        /// <param name="target"> The target identifier to run the job. </param>
+        /// <param name="status"> The status of the job. </param>
         /// <param name="metadata"> The job metadata. Metadata provides client the ability to store client-specific information. </param>
         /// <param name="outputDataUri"> The output blob SAS uri. When a job finishes successfully, results will be uploaded to this blob. </param>
         /// <param name="outputDataFormat"> The format of the output data. </param>
-        /// <param name="status"> The job status. </param>
-        /// <param name="creationTime"> The creation time of the job. </param>
-        /// <param name="beginExecutionTime"> The time when the job began execution. </param>
-        /// <param name="endExecutionTime"> The time when the job finished execution. </param>
-        /// <param name="cancellationTime"> The time when a job was successfully cancelled. </param>
-        /// <param name="costEstimate"> The job cost billed by the provider. The final cost on your bill might be slightly different due to added taxes and currency conversion rates. </param>
-        /// <param name="errorData"> The error data for the job. This is expected only when Status &apos;Failed&apos;. </param>
+        /// <param name="cancellationOn"> The time when a job was successfully cancelled. </param>
+        /// <param name="quantumComputingData"> Quantum computing data. </param>
         /// <param name="tags"> List of user-supplied tags associated with the job. </param>
-        internal JobDetails(string id, string name, string containerUri, string inputDataUri, string inputDataFormat, object inputParams, string providerId, string target, IDictionary<string, string> metadata, string outputDataUri, string outputDataFormat, JobStatus? status, DateTimeOffset? creationTime, DateTimeOffset? beginExecutionTime, DateTimeOffset? endExecutionTime, DateTimeOffset? cancellationTime, CostEstimate costEstimate, ErrorData errorData, IList<string> tags)
+        internal JobDetails(string id, string name, string providerId, string target, ItemType itemType, DateTimeOffset? createdOn, DateTimeOffset? beginExecutionOn, DateTimeOffset? endExecutionOn, CostEstimate costEstimate, ErrorData errorData, JobType? jobType, string sessionId, string containerUri, string inputDataUri, string inputDataFormat, BinaryData inputParams, JobStatus? status, IDictionary<string, string> metadata, string outputDataUri, string outputDataFormat, DateTimeOffset? cancellationOn, QuantumComputingData quantumComputingData, IList<string> tags) : base(id, name, providerId, target, itemType, createdOn, beginExecutionOn, endExecutionOn, costEstimate, errorData)
         {
-            Id = id;
-            Name = name;
+            JobType = jobType;
+            SessionId = sessionId;
             ContainerUri = containerUri;
             InputDataUri = inputDataUri;
             InputDataFormat = inputDataFormat;
             InputParams = inputParams;
-            ProviderId = providerId;
-            Target = target;
+            Status = status;
             Metadata = metadata;
             OutputDataUri = outputDataUri;
             OutputDataFormat = outputDataFormat;
-            Status = status;
-            CreationTime = creationTime;
-            BeginExecutionTime = beginExecutionTime;
-            EndExecutionTime = endExecutionTime;
-            CancellationTime = cancellationTime;
-            CostEstimate = costEstimate;
-            ErrorData = errorData;
+            CancellationOn = cancellationOn;
+            QuantumComputingData = quantumComputingData;
             Tags = tags;
+            ItemType = itemType;
         }
 
-        /// <summary> The job id. </summary>
-        public string Id { get; set; }
-        /// <summary> The job name. Is not required for the name to be unique and it&apos;s only used for display purposes. </summary>
-        public string Name { get; set; }
+        /// <summary> The type of job. </summary>
+        public JobType? JobType { get; }
+        /// <summary> The ID of the session that the job is part of. </summary>
+        public string SessionId { get; set; }
         /// <summary> The blob container SAS uri, the container is used to host job data. </summary>
         public string ContainerUri { get; set; }
         /// <summary> The input blob SAS uri, if specified, it will override the default input blob in the container. </summary>
         public string InputDataUri { get; set; }
         /// <summary> The format of the input data. </summary>
         public string InputDataFormat { get; set; }
-        /// <summary> The input parameters for the job. JSON object used by the target solver. It is expected that the size of this object is small and only used to specify parameters for the execution target, not the input data. </summary>
-        public object InputParams { get; set; }
-        /// <summary> The unique identifier for the provider. </summary>
-        public string ProviderId { get; set; }
-        /// <summary> The target identifier to run the job. </summary>
-        public string Target { get; set; }
+        /// <summary>
+        /// The input parameters for the job. JSON object used by the target solver. It is expected that the size of this object is small and only used to specify parameters for the execution target, not the input data.
+        /// <para>
+        /// To assign an object to this property use <see cref="BinaryData.FromObjectAsJson{T}(T, System.Text.Json.JsonSerializerOptions?)"/>.
+        /// </para>
+        /// <para>
+        /// To assign an already formated json string to this property use <see cref="BinaryData.FromString(string)"/>.
+        /// </para>
+        /// <para>
+        /// Examples:
+        /// <list type="bullet">
+        /// <item>
+        /// <term>BinaryData.FromObjectAsJson("foo")</term>
+        /// <description>Creates a payload of "foo".</description>
+        /// </item>
+        /// <item>
+        /// <term>BinaryData.FromString("\"foo\"")</term>
+        /// <description>Creates a payload of "foo".</description>
+        /// </item>
+        /// <item>
+        /// <term>BinaryData.FromObjectAsJson(new { key = "value" })</term>
+        /// <description>Creates a payload of { "key": "value" }.</description>
+        /// </item>
+        /// <item>
+        /// <term>BinaryData.FromString("{\"key\": \"value\"}")</term>
+        /// <description>Creates a payload of { "key": "value" }.</description>
+        /// </item>
+        /// </list>
+        /// </para>
+        /// </summary>
+        public BinaryData InputParams { get; set; }
+        /// <summary> The status of the job. </summary>
+        public JobStatus? Status { get; }
         /// <summary> The job metadata. Metadata provides client the ability to store client-specific information. </summary>
-        public IDictionary<string, string> Metadata { get; set; }
+        public IDictionary<string, string> Metadata { get; }
         /// <summary> The output blob SAS uri. When a job finishes successfully, results will be uploaded to this blob. </summary>
         public string OutputDataUri { get; set; }
         /// <summary> The format of the output data. </summary>
         public string OutputDataFormat { get; set; }
-        /// <summary> The job status. </summary>
-        public JobStatus? Status { get; }
-        /// <summary> The creation time of the job. </summary>
-        public DateTimeOffset? CreationTime { get; }
-        /// <summary> The time when the job began execution. </summary>
-        public DateTimeOffset? BeginExecutionTime { get; }
-        /// <summary> The time when the job finished execution. </summary>
-        public DateTimeOffset? EndExecutionTime { get; }
         /// <summary> The time when a job was successfully cancelled. </summary>
-        public DateTimeOffset? CancellationTime { get; }
-        /// <summary> The job cost billed by the provider. The final cost on your bill might be slightly different due to added taxes and currency conversion rates. </summary>
-        public CostEstimate CostEstimate { get; }
-        /// <summary> The error data for the job. This is expected only when Status &apos;Failed&apos;. </summary>
-        public ErrorData ErrorData { get; }
+        public DateTimeOffset? CancellationOn { get; }
+        /// <summary> Quantum computing data. </summary>
+        internal QuantumComputingData QuantumComputingData { get; }
+        /// <summary> The number of quantum computing items in the job. </summary>
+        public long? QuantumComputingDataCount
+        {
+            get => QuantumComputingData?.Count;
+        }
+
         /// <summary> List of user-supplied tags associated with the job. </summary>
-        public IList<string> Tags { get; set; }
+        public IList<string> Tags { get; }
     }
 }

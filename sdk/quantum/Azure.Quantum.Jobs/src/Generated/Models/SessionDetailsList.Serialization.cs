@@ -11,11 +11,11 @@ using Azure.Core;
 
 namespace Azure.Quantum.Jobs.Models
 {
-    internal partial class JobDetailsList
+    internal partial class SessionDetailsList
     {
-        internal static JobDetailsList DeserializeJobDetailsList(JsonElement element)
+        internal static SessionDetailsList DeserializeSessionDetailsList(JsonElement element)
         {
-            Optional<IReadOnlyList<JobDetails>> value = default;
+            Optional<IReadOnlyList<SessionDetails>> value = default;
             Optional<string> nextLink = default;
             foreach (var property in element.EnumerateObject())
             {
@@ -26,10 +26,10 @@ namespace Azure.Quantum.Jobs.Models
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    List<JobDetails> array = new List<JobDetails>();
+                    List<SessionDetails> array = new List<SessionDetails>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(JobDetails.DeserializeJobDetails(item));
+                        array.Add(SessionDetails.DeserializeSessionDetails(item));
                     }
                     value = array;
                     continue;
@@ -40,7 +40,7 @@ namespace Azure.Quantum.Jobs.Models
                     continue;
                 }
             }
-            return new JobDetailsList(Optional.ToList(value), nextLink.Value);
+            return new SessionDetailsList(Optional.ToList(value), nextLink.Value);
         }
     }
 }

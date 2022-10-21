@@ -10,8 +10,44 @@ using Azure.Core;
 
 namespace Azure.Quantum.Jobs.Models
 {
-    public partial class UsageEvent
+    public partial class UsageEvent : IUtf8JsonSerializable
     {
+        void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
+        {
+            writer.WriteStartObject();
+            if (Optional.IsDefined(DimensionId))
+            {
+                writer.WritePropertyName("dimensionId");
+                writer.WriteStringValue(DimensionId);
+            }
+            if (Optional.IsDefined(DimensionName))
+            {
+                writer.WritePropertyName("dimensionName");
+                writer.WriteStringValue(DimensionName);
+            }
+            if (Optional.IsDefined(MeasureUnit))
+            {
+                writer.WritePropertyName("measureUnit");
+                writer.WriteStringValue(MeasureUnit);
+            }
+            if (Optional.IsDefined(AmountBilled))
+            {
+                writer.WritePropertyName("amountBilled");
+                writer.WriteNumberValue(AmountBilled.Value);
+            }
+            if (Optional.IsDefined(AmountConsumed))
+            {
+                writer.WritePropertyName("amountConsumed");
+                writer.WriteNumberValue(AmountConsumed.Value);
+            }
+            if (Optional.IsDefined(UnitPrice))
+            {
+                writer.WritePropertyName("unitPrice");
+                writer.WriteNumberValue(UnitPrice.Value);
+            }
+            writer.WriteEndObject();
+        }
+
         internal static UsageEvent DeserializeUsageEvent(JsonElement element)
         {
             Optional<string> dimensionId = default;

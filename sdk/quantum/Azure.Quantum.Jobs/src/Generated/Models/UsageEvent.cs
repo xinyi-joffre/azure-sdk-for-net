@@ -11,7 +11,7 @@ namespace Azure.Quantum.Jobs.Models
     public partial class UsageEvent
     {
         /// <summary> Initializes a new instance of UsageEvent. </summary>
-        internal UsageEvent()
+        public UsageEvent()
         {
         }
 
@@ -33,16 +33,16 @@ namespace Azure.Quantum.Jobs.Models
         }
 
         /// <summary> The dimension id. </summary>
-        public string DimensionId { get; }
+        public string DimensionId { get; set; }
         /// <summary> The dimension name. </summary>
-        public string DimensionName { get; }
+        public string DimensionName { get; set; }
         /// <summary> The unit of measure. </summary>
-        public string MeasureUnit { get; }
+        public string MeasureUnit { get; set; }
         /// <summary> The amount billed. </summary>
-        public float? AmountBilled { get; }
+        public float? AmountBilled { get; set; }
         /// <summary> The amount consumed. </summary>
-        public float? AmountConsumed { get; }
+        public float? AmountConsumed { get; set; }
         /// <summary> The unit price. </summary>
-        public float? UnitPrice { get; }
+        public float? UnitPrice { get; set; }
     }
 }

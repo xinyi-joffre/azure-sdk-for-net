@@ -10,7 +10,7 @@ using System.ComponentModel;
 
 namespace Azure.Quantum.Jobs.Models
 {
-    /// <summary> The job status. </summary>
+    /// <summary> The status of the job. </summary>
     public readonly partial struct JobStatus : IEquatable<JobStatus>
     {
         private readonly string _value;

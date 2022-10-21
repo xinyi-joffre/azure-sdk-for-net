@@ -11,25 +11,20 @@ using Azure.Core;
 
 namespace Azure.Quantum.Jobs.Models
 {
-    public partial class QuantumJobQuotaList
+    internal partial class ItemDetailsList
     {
-        internal static QuantumJobQuotaList DeserializeQuantumJobQuotaList(JsonElement element)
+        internal static ItemDetailsList DeserializeItemDetailsList(JsonElement element)
         {
-            Optional<IReadOnlyList<QuantumJobQuota>> value = default;
+            IReadOnlyList<ItemDetails> value = default;
             Optional<string> nextLink = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("value"))
                 {
-                    if (property.Value.ValueKind == JsonValueKind.Null)
-                    {
-                        property.ThrowNonNullablePropertyIsNull();
-                        continue;
-                    }
-                    List<QuantumJobQuota> array = new List<QuantumJobQuota>();
+                    List<ItemDetails> array = new List<ItemDetails>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(QuantumJobQuota.DeserializeQuantumJobQuota(item));
+                        array.Add(ItemDetails.DeserializeItemDetails(item));
                     }
                     value = array;
                     continue;
@@ -40,7 +35,7 @@ namespace Azure.Quantum.Jobs.Models
                     continue;
                 }
             }
-            return new QuantumJobQuotaList(Optional.ToList(value), nextLink.Value);
+            return new ItemDetailsList(value, nextLink.Value);
         }
     }
 }

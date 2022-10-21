@@ -14,7 +14,7 @@ namespace Azure.Quantum.Jobs.Models
     public partial class CostEstimate
     {
         /// <summary> Initializes a new instance of CostEstimate. </summary>
-        internal CostEstimate()
+        public CostEstimate()
         {
             Events = new ChangeTrackingList<UsageEvent>();
         }
@@ -23,7 +23,7 @@ namespace Azure.Quantum.Jobs.Models
         /// <param name="currencyCode"> The currency code. </param>
         /// <param name="events"> List of usage events. </param>
         /// <param name="estimatedTotal"> The estimated total. </param>
-        internal CostEstimate(string currencyCode, IReadOnlyList<UsageEvent> events, float? estimatedTotal)
+        internal CostEstimate(string currencyCode, IList<UsageEvent> events, float? estimatedTotal)
         {
             CurrencyCode = currencyCode;
             Events = events;
@@ -31,10 +31,10 @@ namespace Azure.Quantum.Jobs.Models
         }
 
         /// <summary> The currency code. </summary>
-        public string CurrencyCode { get; }
+        public string CurrencyCode { get; set; }
         /// <summary> List of usage events. </summary>
-        public IReadOnlyList<UsageEvent> Events { get; }
+        public IList<UsageEvent> Events { get; }
         /// <summary> The estimated total. </summary>
-        public float? EstimatedTotal { get; }
+        public float? EstimatedTotal { get; set; }
     }
 }

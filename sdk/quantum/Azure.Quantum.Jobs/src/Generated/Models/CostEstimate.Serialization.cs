@@ -11,12 +11,38 @@ using Azure.Core;
 
 namespace Azure.Quantum.Jobs.Models
 {
-    public partial class CostEstimate
+    public partial class CostEstimate : IUtf8JsonSerializable
     {
+        void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
+        {
+            writer.WriteStartObject();
+            if (Optional.IsDefined(CurrencyCode))
+            {
+                writer.WritePropertyName("currencyCode");
+                writer.WriteStringValue(CurrencyCode);
+            }
+            if (Optional.IsCollectionDefined(Events))
+            {
+                writer.WritePropertyName("events");
+                writer.WriteStartArray();
+                foreach (var item in Events)
+                {
+                    writer.WriteObjectValue(item);
+                }
+                writer.WriteEndArray();
+            }
+            if (Optional.IsDefined(EstimatedTotal))
+            {
+                writer.WritePropertyName("estimatedTotal");
+                writer.WriteNumberValue(EstimatedTotal.Value);
+            }
+            writer.WriteEndObject();
+        }
+
         internal static CostEstimate DeserializeCostEstimate(JsonElement element)
         {
             Optional<string> currencyCode = default;
-            Optional<IReadOnlyList<UsageEvent>> events = default;
+            Optional<IList<UsageEvent>> events = default;
             Optional<float> estimatedTotal = default;
             foreach (var property in element.EnumerateObject())
             {
